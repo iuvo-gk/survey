@@ -1,0 +1,108 @@
+
+enum QuestionType {
+    TEXT
+    OPTIONS_RADIO
+    OPTIONS_MULTI
+}
+
+enum OPERATOR_TYPE {
+    EQUALS_OPERATOR
+    NOT_EQUALS_OPERATOR
+    CONTAINS_OPERATOR
+    ONE_OF_OPERATOR
+    NOT_ONE_OF_OPERATOR
+}
+
+type User { 
+    id: ID! @id
+    first_name: String
+    last_name: String
+    email: String! @unique
+    password: String!
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type School {
+    id: ID! @id
+    name: String!
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type Department {
+    id: ID! @id
+    name: String!
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type Survey {
+    id: ID! @id
+    name: String!
+    image: String
+    version: Int!
+    questions: [Question!]!
+    surveyEditorState: String!
+    deletedAt: DateTime!
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type Question {
+    id: ID! @id
+    custom_id: String!
+    type: QuestionType!
+    survey: Survey!
+    fromSurveyVersion: Int!
+    answers: [Answer!]!
+    conditional_logic: Boolean!
+    conditionals: String
+    value: String!
+    options: [Option!]!
+    allowOther: Boolean
+    deletedAt: DateTime    
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type Option {
+    id: ID! @id
+    custom_id: String!
+    question: Question!
+    conditional_logic: Boolean!
+    conditionals: String
+    public: Boolean!
+    value: String!
+    addedBy: Student
+    deletedAt: DateTime    
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type Answer {
+    id: ID! @id
+    question: Question!
+    value: String 
+    option: Option @relation(name: "OptionToAnswer")
+    options: [Option!] @relation(name: "OptionsToAnswer")
+    student: Student
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}
+
+type Student {
+    id: ID! @id
+    survey: Survey!
+    name: String!
+    surname: String!
+    answers: [Answer!]!
+    email: String
+    tel: String
+    school: String!
+    department: Department
+    grade: Int
+    paralel: Int
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+}

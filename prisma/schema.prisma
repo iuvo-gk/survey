@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestionType {
+  TEXT
+  OPTIONS_RADIO
+  OPTIONS_MULTI
+}
+
+enum OPERATOR_TYPE {
+  EQUALS_OPERATOR
+  NOT_EQUALS_OPERATOR
+  CONTAINS_OPERATOR
+  ONE_OF_OPERATOR
+  NOT_ONE_OF_OPERATOR
+}
+
+model User {
+  id         String   @id @default(cuid())
+  first_name String?
+  last_name  String?
+  email      String   @unique
+  password   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id        String    @id @default(cuid())
+  name      String
+  students  Student[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Survey {
+  id                String     @id @default(cuid())
+  name              String
+  image             String?
+  version           Int
+  questions         Question[]
+  students          Student[]
+  surveyEditorState String     @db.LongText
+  deletedAt         DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+model Question {
+  id                String       @id @default(cuid())
+  custom_id         String
+  type              QuestionType
+  survey            Survey       @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  surveyId          String
+  fromSurveyVersion Int
+  answers           Answer[]
+  conditional_logic Boolean
+  conditionals      String?      @db.LongText
+  value             String       @db.LongText
+  options           Option[]
+  allowOther        Boolean?
+  deletedAt         DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([surveyId])
+  @@index([surveyId, deletedAt])
+  @@index([surveyId, fromSurveyVersion])
+}
+
+model Option {
+  id                String    @id @default(cuid())
+  custom_id         String
+  question          Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId        String
+  conditional_logic Boolean
+  conditionals      String?   @db.LongText
+  public            Boolean
+  value             String    @db.LongText
+  addedBy           Student?  @relation("StudentAddedOptions", fields: [addedById], references: [id], onDelete: SetNull)
+  addedById         String?
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  answerSingle      Answer[]  @relation("SelectedOption")
+  answersMulti      Answer[]  @relation("SelectedOptions")
+
+  @@index([questionId])
+  @@index([addedById])
+}
+
+model Answer {
+  id        String    @id @default(cuid())
+  question  Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  value     String?   @db.LongText
+  option    Option?   @relation("SelectedOption", fields: [optionId], references: [id], onDelete: SetNull)
+  optionId  String?
+  options   Option[]  @relation("SelectedOptions")
+  student   Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  studentId String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([questionId])
+  @@index([optionId])
+  @@index([studentId])
+}
+
+model Student {
+  id          String    @id @default(cuid())
+  survey      Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  surveyId    String
+  name        String
+  surname     String
+  answers     Answer[]
+  email       String?
+  tel         String?
+  school      String
+  department  Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  departmentId String?
+  grade       Int?
+  paralel     Int?
+  addedOptions Option[] @relation("StudentAddedOptions")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([surveyId])
+  @@index([departmentId])
+}

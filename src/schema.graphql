@@ -1,0 +1,223 @@
+
+type QuestionAnswers {
+    question: Question!
+    answers: [Answer!]!
+}
+
+type AllSurveyInfo {
+    survey: Survey!
+    question_answers: [QuestionAnswers!]!
+}
+
+type Query {
+	getLoggedInUser: User
+    getSurveysInfo: [AllSurveyInfo!]!
+    surveys: [Survey!]!
+    survey(id: ID!): Survey!
+    students: [Student!]!
+    stats: Statistic
+}
+
+type Statistic {
+    students_len: Int!
+    answers_len: Int!
+    surveys_len: Int!
+    questions_len: Int!
+}
+
+type Mutation {
+	login(
+		email: String!
+		password: String!
+	): AuthData!
+	signUp(
+		first_name: String!
+		last_name: String!
+		email: String!
+		password: String!
+	): AuthData!
+
+	updateUser(
+		first_name: String
+		last_name: String
+		email: String
+		password: ChangePasswordInput
+	): User!
+
+    createSurvey(
+        name: String
+        questions: [QuestionInput!]!
+        surveyEditorState: String!
+    ): Survey!
+
+    editSurvey(
+        id: ID!
+        name: String
+        questions: [QuestionInput!]!
+        surveyEditorState: String!
+    ): Survey!
+    
+    deleteSurvey(
+        id: ID!
+    ): Survey!
+
+    submitAnswers(
+        survey: ID!
+        answers: [AnswerInput!]!
+        student: StudentInput!
+    ): Survey!
+}
+
+
+type AuthData {
+	userId: ID!
+	token: String!
+	expiresIn: Int!
+}
+
+input ChangePasswordInput {
+	old_password: String!
+    new_password: String!
+}
+
+input AnswerInput {
+    question: ID
+    value: String
+    option: ID
+    options: [ID!]
+}
+
+input StudentInput {
+    name: String!
+    surname: String!
+    email: String!
+    tel: String!
+    school: String!
+    grade: Int
+    paralel: Int
+}
+
+input OptionInput {
+    conditional_logic: Boolean!
+    conditionals: String
+    value: String!
+    custom_id: String!
+} 
+
+input QuestionInput {
+    type: QuestionType!
+    custom_id: String!
+    conditional_logic: Boolean!
+    conditionals: String
+    value: String!
+    options: [OptionInput!]
+    allowOther: Boolean
+}
+
+enum QuestionType {
+    TEXT
+    OPTIONS_RADIO
+    OPTIONS_MULTI
+}
+
+enum OPERATOR_TYPE {
+    EQUALS_OPERATOR
+    NOT_EQUALS_OPERATOR
+    CONTAINS_OPERATOR
+    ONE_OF_OPERATOR
+    NOT_ONE_OF_OPERATOR
+}
+
+type User { 
+    id: ID! 
+    first_name: String
+    last_name: String
+    email: String! 
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type School {
+    id: ID! 
+    name: String!
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type Department {
+    id: ID! 
+    name: String!
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type Survey {
+    id: ID! 
+    name: String!
+    image: String
+    version: Int!
+    questions: [Question!]!
+    surveyEditorState: String!
+    deletedAt: String
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type Question {
+    id: ID! 
+    custom_id: String!
+    type: QuestionType!
+    survey: Survey!
+    answers: [Answer!]!
+    fromSurveyVersion: Int!
+    conditional_logic: Boolean!
+    conditionals: String
+    value: String!
+    options: [Option!]
+    allowOther: Boolean
+    deletedAt: String    
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type Option {
+    id: ID! 
+    question: Question!
+    custom_id: String!
+    conditional_logic: Boolean!
+    conditionals: String
+    public: Boolean!
+    value: String!
+    addedBy: Student
+    deletedAt: String    
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type Answer {
+    id: ID! 
+    question: Question!
+    value: String 
+    option: Option 
+    options: [Option!] 
+    student: Student
+    createdAt: String! 
+    updatedAt: String! 
+}
+
+type Student {
+    id: ID! 
+    survey: Survey!
+    name: String!
+    surname: String!
+    answers: [Answer!]!    
+    email: String
+    tel: String
+    answers_len: Int!
+    school: String!
+    department: Department
+    grade: Int
+    paralel: Int
+    createdAt: String! 
+    updatedAt: String! 
+}
