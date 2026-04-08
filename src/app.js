@@ -47,13 +47,27 @@ const server = new graphqlServer({
 	}
 });
 
+let httpServer;
+
+const initializeServer = () => {
+	if (!httpServer) {
+		httpServer = server.createHttpServer(options);
+	}
+
+	return httpServer;
+};
+
 const shutdown = async () => {
 	await prisma.$disconnect();
 	process.exit(0);
 };
 
 const startServer = () => {
-	server.start(options, () => console.log(`Running on port ${options.port}`));
+	const combinedServer = initializeServer();
+
+	combinedServer.listen(options.port, () => {
+		console.log(`Running on port ${options.port}`);
+	});
 
 	process.on("SIGINT", shutdown);
 	process.on("SIGTERM", shutdown);
@@ -64,6 +78,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+	initializeServer,
 	server,
 	startServer
 };

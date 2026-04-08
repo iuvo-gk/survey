@@ -1,3 +1,5 @@
-const { server } = require("../src/app");
+const { initializeServer, server } = require("../src/app");
+
+initializeServer();
 
 module.exports = server.express;
