@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -53,7 +53,7 @@ model Survey {
   version           Int
   questions         Question[]
   students          Student[]
-  surveyEditorState String     @db.LongText
+  surveyEditorState String     @db.Text
   deletedAt         DateTime?
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
@@ -68,8 +68,8 @@ model Question {
   fromSurveyVersion Int
   answers           Answer[]
   conditional_logic Boolean
-  conditionals      String?      @db.LongText
-  value             String       @db.LongText
+  conditionals      String?      @db.Text
+  value             String       @db.Text
   options           Option[]
   allowOther        Boolean?
   deletedAt         DateTime?
@@ -87,9 +87,9 @@ model Option {
   question          Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId        String
   conditional_logic Boolean
-  conditionals      String?   @db.LongText
+  conditionals      String?   @db.Text
   public            Boolean
-  value             String    @db.LongText
+  value             String    @db.Text
   addedBy           Student?  @relation("StudentAddedOptions", fields: [addedById], references: [id], onDelete: SetNull)
   addedById         String?
   deletedAt         DateTime?
@@ -106,7 +106,7 @@ model Answer {
   id        String    @id @default(cuid())
   question  Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId String
-  value     String?   @db.LongText
+  value     String?   @db.Text
   option    Option?   @relation("SelectedOption", fields: [optionId], references: [id], onDelete: SetNull)
   optionId  String?
   options   Option[]  @relation("SelectedOptions")

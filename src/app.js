@@ -9,8 +9,9 @@ const middlewares = require("./middlewares");
 const prisma = require("./prisma");
 // var health = require('express-ping');
 
-const options =  {
-	formatError, port: process.env.PORT || 4000
+const options = {
+	formatError,
+	port: process.env.PORT || 4000
 };
 
 const server = new graphqlServer({
@@ -19,7 +20,7 @@ const server = new graphqlServer({
 	resolvers,
 	context: async req => {
 		let user;
-		if (req.request.headers["authorization"]){
+		if (req.request.headers["authorization"]) {
 			const token = req.request.headers["authorization"].split(" ")[1];
 			try {
 				const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -46,13 +47,38 @@ const server = new graphqlServer({
 	}
 });
 
-// server.express.use(cors());
-server.start(options, () => console.log(`Running on port ${options.port}`));
+let httpServer;
+
+const initializeServer = () => {
+	if (!httpServer) {
+		httpServer = server.createHttpServer(options);
+	}
+
+	return httpServer;
+};
 
 const shutdown = async () => {
 	await prisma.$disconnect();
 	process.exit(0);
 };
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+const startServer = () => {
+	const combinedServer = initializeServer();
+
+	combinedServer.listen(options.port, () => {
+		console.log(`Running on port ${options.port}`);
+	});
+
+	process.on("SIGINT", shutdown);
+	process.on("SIGTERM", shutdown);
+};
+
+if (require.main === module) {
+	startServer();
+}
+
+module.exports = {
+	initializeServer,
+	server,
+	startServer
+};
